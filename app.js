@@ -14,7 +14,7 @@
             var textInput = $scope.textInput;
             console.log(textInput);
 
-            if(textInput === " " || textInput == null){
+            if(textInput == "" || textInput == null){
     
                 $scope.text = "Please enter some data";
             }
