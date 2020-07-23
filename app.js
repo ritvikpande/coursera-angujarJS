@@ -1,44 +1,89 @@
 (function(){
-    'use-strict';
-    angular.module('LunchCheck', [])
-    .controller('LunchCheckController', lunchChecker)
-
-    lunchChecker.$inject = ['$scope'];
-
-    function lunchChecker($scope){
-       
-        $scope.lunch = function(){
-
-            $scope.text == " ";
-            
-            var textInput = $scope.textInput;
-            console.log(textInput);
-
-            if(textInput == "" || textInput == null){
+    'use-strict'; 
+    angular.module('ShoppingListCheckOff', [])
     
-                $scope.text = "Please enter some data";
-            }
-    
-            else{
-                
-                const tot_items = textInput.split(',');
-                //console.log(tot_items);
+    .controller('ToBuyController', ToBuyController)  
+    .controller('AlreadyBoughtController', AlreadyBoughtController)
+    .service('ShoppingListCheckOffService', ShoppingListCheckOffService);
 
-                var item_length = tot_items.length;
-                console.log('Length is ' +item_length);
+    //Controller-1
+    ToBuyController.$inject = ['ShoppingListCheckOffService'];
+    function ToBuyController(ShoppingListCheckOffService){
 
-                if(item_length > 3){
-    
-                    $scope.text = "Too Much!";
-                }
-                else if(item_length <= 3){
+        var showList = this;
+        showList.items = ShoppingListCheckOffService.getItems();
         
-                    $scope.text = "Enjoy!";
-                }
-            }
+        showList.removeItem = function(itemIndex){
+            ShoppingListCheckOffService.addItems(showList.items[itemIndex].name, showList.items[itemIndex].quantity);
+            ShoppingListCheckOffService.removeItem(itemIndex);  
         };
-       
+    }
 
-    };
-}
-)();
+    //Controller-2
+    AlreadyBoughtController.$inject = ['ShoppingListCheckOffService'];
+    function AlreadyBoughtController(ShoppingListCheckOffService){
+        
+        var addList = this;
+        var flag;
+        addList.newItems = ShoppingListCheckOffService.getBoughtItems();       
+   }
+
+   //Service 1 Function
+   function ShoppingListCheckOffService(){
+
+        var service = this;
+        // Shopping List 
+        var items = [
+            {
+                name: "Chips",
+                quantity: "10 bags"
+            },
+            {
+                name: "Cola",
+                quantity: "20 bottles"
+            },
+            {
+                name: "Soap",
+                quantity: "5 bars"
+            },
+            {
+                name: "Cookies",
+                quantity: "100 bags"
+            },
+            {
+                name: "Eggs",
+                quantity: "5 dozen"
+            }
+        ];
+
+        service.getItems = function(){
+            return items;
+        };
+
+        service.removeItem = function(itemIndex){
+
+            items.splice(itemIndex, 1);
+        };
+
+        var itemsBought = [];
+        service.addItems = function(itemName, quantity){
+
+            var boughtItems = [];
+            var item = {
+
+                name: itemName,
+                quantity: quantity
+            }; 
+             
+            itemsBought.push(item);
+            console.log(itemsBought);
+        };
+
+        service.getBoughtItems = function(){
+
+            return itemsBought;           
+        };
+
+   }
+
+})();
