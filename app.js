@@ -1,89 +1,89 @@
 (function(){
-    'use-strict'; 
-    angular.module('ShoppingListCheckOff', [])
+    'use-strict';
+    angular.module('NarrowItDownApp', [])
+
+    .controller('NarrowItDownController', NarrowItDownController)
+    .service('MenuSearchService', MenuSearchService)
+    .directive('foundItems', FoundItems);
+
+    NarrowItDownController.$inject = ['MenuSearchService'];
+    function NarrowItDownController(MenuSearchService){
+        var narrow = this;
+        var promise = MenuSearchService.getMenuCategories();
+
+        promise.then(function (response){
+
+            narrow.categories = response.data.menu_items;
+            //console.log("narrow.categories is following", narrow.categories);
+            
+            
+            narrow.getMatchedMenuItems = function(searchItem){
+                
+                var searchItem = narrow.searchItem.toLowerCase();
+                console.log("searching menu items for: " , searchItem);
+                narrow.found = [];
+
+                for(var i = 0; i<narrow.categories.length; i++){
+
+                    if(narrow.categories[i].description.toLowerCase().includes(searchItem)){
     
-    .controller('ToBuyController', ToBuyController)  
-    .controller('AlreadyBoughtController', AlreadyBoughtController)
-    .service('ShoppingListCheckOffService', ShoppingListCheckOffService);
+                        
+                        narrow.found.push(narrow.categories[i]);
+                        console.log(narrow.found);
+                    }
+                };
 
-    //Controller-1
-    ToBuyController.$inject = ['ShoppingListCheckOffService'];
-    function ToBuyController(ShoppingListCheckOffService){
+                narrow.removeItem = function(itemIndex){
 
-        var showList = this;
-        showList.items = ShoppingListCheckOffService.getItems();
-        
-        showList.removeItem = function(itemIndex){
-            ShoppingListCheckOffService.addItems(showList.items[itemIndex].name, showList.items[itemIndex].quantity);
-            ShoppingListCheckOffService.removeItem(itemIndex);  
-        };
-    }
+                    narrow.found.splice(itemIndex, 1);
+                };
 
-    //Controller-2
-    AlreadyBoughtController.$inject = ['ShoppingListCheckOffService'];
-    function AlreadyBoughtController(ShoppingListCheckOffService){
-        
-        var addList = this;
-        var flag;
-        addList.newItems = ShoppingListCheckOffService.getBoughtItems();       
-   }
+                narrow.checkButton = function(){
 
-   //Service 1 Function
-   function ShoppingListCheckOffService(){
-
-        var service = this;
-        // Shopping List 
-        var items = [
-            {
-                name: "Chips",
-                quantity: "10 bags"
-            },
-            {
-                name: "Cola",
-                quantity: "20 bottles"
-            },
-            {
-                name: "Soap",
-                quantity: "5 bars"
-            },
-            {
-                name: "Cookies",
-                quantity: "100 bags"
-            },
-            {
-                name: "Eggs",
-                quantity: "5 dozen"
+                    if(narrow.found.length == 0 || searchItem == null || searchItem == " " ){
+                        
+                        return true;
+                    }
+                };
+    
             }
-        ];
 
-        service.getItems = function(){
-            return items;
+            
+        })
+            .catch(function (error){
+                
+                console.log("Something went wrong!");
+                console.log(error);
+        });      
+
+    }; // end of controller
+
+    function FoundItems(){
+
+        var ddo = {
+            templateUrl: 'listItem.html'
         };
 
-        service.removeItem = function(itemIndex){
+        return ddo;
 
-            items.splice(itemIndex, 1);
+    }; // end of custom directive
+
+    MenuSearchService.$inject = ['$http'];
+    function MenuSearchService($http){
+        var service = this;
+        service.getMenuCategories = function (){
+            var response = $http({
+                method: "GET",
+                url: ("https://davids-restaurant.herokuapp.com/menu_items.json")
+                 
+            });
+            
+            return response;
         };
 
-        var itemsBought = [];
-        service.addItems = function(itemName, quantity){
+        
 
-            var boughtItems = [];
-            var item = {
 
-                name: itemName,
-                quantity: quantity
-            }; 
-             
-            itemsBought.push(item);
-            console.log(itemsBought);
-        };
-
-        service.getBoughtItems = function(){
-
-            return itemsBought;           
-        };
-
-   }
+    }; //end of service 
 
 })();
